@@ -37,10 +37,6 @@ BSS 11:22:33:44:55:66(on wlp2s0)
 		 * L-SIG TXOP Prot: 0
 		 * PCO active: 0
 		 * PCO phase: 0
-	WPA:	 * Version: 1
-		 * Group cipher: TKIP
-		 * Pairwise ciphers: TKIP CCMP
-		 * Authentication suites: PSK
 	RSN:	 * Version: 1
 		 * Group cipher: TKIP
 		 * Pairwise ciphers: TKIP CCMP
@@ -207,10 +203,6 @@ BSS 44:55:66:77:88:99(on wlp2s0)
 		Channels [1 - 13] @ 20 dBm
 	TIM: DTIM Count 0 DTIM Period 1 Bitmap Control 0x0 Bitmap[0] 0x0
 	ERP: Barker_Preamble_Mode
-	WPA:	 * Version: 1
-		 * Group cipher: TKIP
-		 * Pairwise ciphers: TKIP
-		 * Authentication suites: PSK
 	WMM:	 * Parameter version 1
 		 * BE: CW 15-1023, AIFSN 3
 		 * BK: CW 15-1023, AIFSN 7
@@ -342,11 +334,6 @@ BSS 66:77:88:99:aa:bb(on wlp2s0)
 		 * L-SIG TXOP Prot: 0
 		 * PCO active: 0
 		 * PCO phase: 0
-	WPA:	 * Version: 1
-		 * Group cipher: TKIP
-		 * Pairwise ciphers: CCMP TKIP
-		 * Authentication suites: PSK
-		 * Capabilities: 16-PTKSA-RC 1-GTKSA-RC (0x000c)
 	WMM:	 * Parameter version 1
 		 * BE: CW 15-63, AIFSN 3
 		 * BK: CW 15-1023, AIFSN 7

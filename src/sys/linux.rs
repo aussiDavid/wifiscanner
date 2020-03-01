@@ -60,12 +60,21 @@ fn parse_iw_dev_scan(network_list: &str) -> Result<Vec<Wifi>, Error> {
             wifi.channel = channel;
         } else if let Ok(ssid) = extract_value(line, "\tSSID: ", None) {
             wifi.ssid = ssid;
+        } else if let Ok(security) = extract_value(line, "\t", Some(":\t")) {
+            if security == "WPA".to_string() 
+            {
+                println!("---------------- ");
+                println!("{}", security);
+                wifi.security = "WPA".to_string();
+            }
         }
 
+        //TODO detect end of wifi AP
         if !wifi.mac.is_empty()
             && !wifi.signal_level.is_empty()
             && !wifi.channel.is_empty()
             && !wifi.ssid.is_empty()
+
         {
             wifis.push(wifi);
             wifi = Wifi::default();
@@ -155,7 +164,42 @@ mod tests {
         let _ = file.read_to_string(&mut filestr).unwrap();
 
         let result = parse_iw_dev_scan(&filestr).unwrap();
+        assert_eq!(expected[0].mac, result[0].mac);
+        assert_eq!(expected[0].ssid, result[0].ssid);
+        assert_eq!(expected[0].channel, result[0].channel);
+        assert_eq!(expected[0].signal_level, result[0].signal_level);
+        assert_eq!(expected[1].mac, result[5].mac);
+        assert_eq!(expected[1].ssid, result[5].ssid);
+        assert_eq!(expected[1].channel, result[5].channel);
+        assert_eq!(expected[1].signal_level, result[5].signal_level);
+    }
+
+    #[test]
+    fn should_parse_wpa_when_scanning_wifi_device() {
+        let mut expected: Vec<Wifi> = Vec::new();
+        expected.push(Wifi {
+            mac: "55:66:77:88:99:aa".to_string(),
+            ssid: "one-more".to_string(),
+            channel: "2".to_string(),
+            signal_level: "-84.00".to_string(),
+            security: "WPA".to_string(),
+        });
+
+        // FIXME: should be a better way to create test fixtures
+        let mut path = PathBuf::new();
+        path.push("tests");
+        path.push("fixtures");
+        path.push("iw");
+        path.push("iw_dev_scan_02.txt");
+
+        let file_path = path.as_os_str();
+
+        let mut file = File::open(&file_path).unwrap();
+
+        let mut filestr = String::new();
+        let _ = file.read_to_string(&mut filestr).unwrap();
+
+        let result = parse_iw_dev_scan(&filestr).unwrap();
         assert_eq!(expected[0], result[0]);
-        assert_eq!(expected[1], result[5]);
     }
 }
