@@ -19,7 +19,7 @@ pub fn run(network: &str) -> Result<Wifi, Error> {
         }
     }
 
-    Ok(wifi);
+    Ok(wifi)
 }
 
 fn extract_value(
