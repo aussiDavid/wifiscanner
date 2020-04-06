@@ -19,5 +19,10 @@ If you want mentoring on an issue please ask, we'll assign someone to work with 
 
 ## Setting up your environment
 
-- Install Rust and friends using [rustup](https://rustup.rs) 
+- Install Rust and friends using [rustup](https://rustup.rs)
 - If you don't have a preferred editor, [VS Code](https://code.visualstudio.com) with the [RLS](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust) extension are an awesome combo
+
+## Running tests
+
+- Run tests once using `make test`
+- Run tests when a file changes using `make test-watch`
