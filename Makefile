@@ -10,6 +10,7 @@ test:
 	@cargo test
 
 test-watch:
+	@cargo install cargo-watch
 	@cargo watch -x test
 
 lint:
