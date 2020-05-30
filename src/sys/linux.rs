@@ -1,7 +1,7 @@
 use crate::{Error, Wifi};
+use regex::Regex;
 use std::env;
 use std::process::Command;
-use regex::Regex;
 
 /// Returns a list of WiFi hotspots in your area - (Linux) uses `iw`
 pub(crate) fn scan() -> Result<Vec<Wifi>, Error> {
@@ -51,15 +51,18 @@ fn parse_iw_dev(interfaces: &str) -> Result<String, Error> {
 fn parse_iw_dev_scan(network_list: &str) -> Result<Vec<Wifi>, Error> {
     let mut wifis: Vec<Wifi> = Vec::new();
     let mut wifi = Wifi::default();
-    
+
     for line in network_list.split("\n") {
-        if Regex::new(r"^BSS\s+..:..:..:..:..:..").unwrap().is_match(line) {
+        if Regex::new(r"^BSS\s+..:..:..:..:..:..")
+            .unwrap()
+            .is_match(line)
+        {
             if !wifi.mac.is_empty() {
                 wifis.push(wifi);
                 wifi = Wifi::default();
             }
         }
-       
+
         if let Ok(mac) = extract_value(line, "BSS ", Some("(")) {
             wifi.mac = mac;
         } else if let Ok(signal) = extract_value(line, "\tsignal: ", Some(" dBm")) {
@@ -68,7 +71,7 @@ fn parse_iw_dev_scan(network_list: &str) -> Result<Vec<Wifi>, Error> {
             wifi.channel = channel;
         } else if let Ok(ssid) = extract_value(line, "\tSSID: ", None) {
             wifi.ssid = ssid;
-        } else if Regex::new(r"^\s*WPA:").unwrap().is_match(line) {           
+        } else if Regex::new(r"^\s*WPA:").unwrap().is_match(line) {
             wifi.security = "WPA".to_string();
         }
     }
