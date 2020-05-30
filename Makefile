@@ -1,4 +1,4 @@
-.PHONY: check format test lint
+.PHONY: check format test test-watch lint
 
 check:
 	@cargo check
@@ -8,6 +8,9 @@ format:
 
 test:
 	@cargo test
+
+test-watch:
+	@cargo watch -x test
 
 lint:
 	@cargo clippy
