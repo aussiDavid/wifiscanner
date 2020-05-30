@@ -42,6 +42,8 @@
 extern crate itertools;
 #[cfg(target_os = "windows")]
 extern crate regex;
+#[cfg(target_os = "linux")]
+extern crate regex;
 
 mod sys;
 

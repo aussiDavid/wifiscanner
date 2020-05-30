@@ -1,6 +1,7 @@
 use crate::{Error, Wifi};
 use std::env;
 use std::process::Command;
+use regex::Regex;
 
 /// Returns a list of WiFi hotspots in your area - (Linux) uses `iw`
 pub(crate) fn scan() -> Result<Vec<Wifi>, Error> {
@@ -48,10 +49,17 @@ fn parse_iw_dev(interfaces: &str) -> Result<String, Error> {
 }
 
 fn parse_iw_dev_scan(network_list: &str) -> Result<Vec<Wifi>, Error> {
-    // TODO: implement wifi.security
     let mut wifis: Vec<Wifi> = Vec::new();
     let mut wifi = Wifi::default();
+    
     for line in network_list.split("\n") {
+        if Regex::new(r"^BSS\s+..:..:..:..:..:..").unwrap().is_match(line) {
+            if !wifi.mac.is_empty() {
+                wifis.push(wifi);
+                wifi = Wifi::default();
+            }
+        }
+       
         if let Ok(mac) = extract_value(line, "BSS ", Some("(")) {
             wifi.mac = mac;
         } else if let Ok(signal) = extract_value(line, "\tsignal: ", Some(" dBm")) {
@@ -60,16 +68,13 @@ fn parse_iw_dev_scan(network_list: &str) -> Result<Vec<Wifi>, Error> {
             wifi.channel = channel;
         } else if let Ok(ssid) = extract_value(line, "\tSSID: ", None) {
             wifi.ssid = ssid;
+        } else if Regex::new(r"^\s*WPA:").unwrap().is_match(line) {           
+            wifi.security = "WPA".to_string();
         }
+    }
 
-        if !wifi.mac.is_empty()
-            && !wifi.signal_level.is_empty()
-            && !wifi.channel.is_empty()
-            && !wifi.ssid.is_empty()
-        {
-            wifis.push(wifi);
-            wifi = Wifi::default();
-        }
+    if !wifi.mac.is_empty() {
+        wifis.push(wifi);
     }
 
     Ok(wifis)
@@ -102,50 +107,62 @@ mod tests {
     #[test]
     fn should_parse_iw_dev() {
         let expected = "wlp2s0";
+        let result = parse_iw_dev(&read_fixture("iw_dev_01.txt")).unwrap();
 
-        // FIXME: should be a better way to create test fixtures
-        let mut path = PathBuf::new();
-        path.push("tests");
-        path.push("fixtures");
-        path.push("iw");
-        path.push("iw_dev_01.txt");
-
-        let file_path = path.as_os_str();
-
-        let mut file = File::open(&file_path).unwrap();
-
-        let mut filestr = String::new();
-        let _ = file.read_to_string(&mut filestr).unwrap();
-
-        let result = parse_iw_dev(&filestr).unwrap();
         assert_eq!(expected, result);
     }
 
     #[test]
-    fn should_parse_iw_dev_scan() {
-        let mut expected: Vec<Wifi> = Vec::new();
-        expected.push(Wifi {
+    fn when_it_parses_the_first_device() {
+        let expected: Wifi = Wifi {
             mac: "11:22:33:44:55:66".to_string(),
             ssid: "hello".to_string(),
             channel: "10".to_string(),
             signal_level: "-67.00".to_string(),
-            security: "".to_string(),
-        });
+            security: "WPA".to_string(),
+        };
 
-        expected.push(Wifi {
+        let result = parse_iw_dev_scan(&read_fixture("iw_dev_scan_01.txt")).unwrap();
+
+        assert_eq!(expected, result[0]);
+    }
+
+    #[test]
+    fn when_there_is_a_security() {
+        let expected: Wifi = Wifi {
             mac: "66:77:88:99:aa:bb".to_string(),
             ssid: "hello-world-foo-bar".to_string(),
             channel: "8".to_string(),
             signal_level: "-89.00".to_string(),
-            security: "".to_string(),
-        });
+            security: "WPA".to_string(),
+        };
 
-        // FIXME: should be a better way to create test fixtures
+        let result = parse_iw_dev_scan(&read_fixture("iw_dev_scan_01.txt")).unwrap();
+
+        assert_eq!(expected, result[5]);
+    }
+
+    #[test]
+    fn when_there_is_no_security() {
+        let expected: Wifi = Wifi {
+            mac: "22:33:44:55:66:77".to_string(),
+            ssid: "world".to_string(),
+            channel: "1".to_string(),
+            signal_level: "-42.00".to_string(),
+            security: "".to_string(),
+        };
+
+        let result = parse_iw_dev_scan(&read_fixture("iw_dev_scan_01.txt")).unwrap();
+
+        assert_eq!(expected, result[1]);
+    }
+
+    fn read_fixture(file: &str) -> String {
         let mut path = PathBuf::new();
         path.push("tests");
         path.push("fixtures");
         path.push("iw");
-        path.push("iw_dev_scan_01.txt");
+        path.push(file);
 
         let file_path = path.as_os_str();
 
@@ -154,8 +171,6 @@ mod tests {
         let mut filestr = String::new();
         let _ = file.read_to_string(&mut filestr).unwrap();
 
-        let result = parse_iw_dev_scan(&filestr).unwrap();
-        assert_eq!(expected[0], result[0]);
-        assert_eq!(expected[1], result[5]);
+        return filestr;
     }
 }
