@@ -21,3 +21,25 @@ If you want mentoring on an issue please ask, we'll assign someone to work with 
 
 - Install Rust and friends using [rustup](https://rustup.rs) 
 - If you don't have a preferred editor, [VS Code](https://code.visualstudio.com) with the [RLS](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust) extension are an awesome combo
+
+### Using Docker
+
+Install Docker and Docker Compose.
+
+To build:
+
+```sh
+$ docker-compose build
+```
+
+To run the tests and watch for changes:
+
+```sh
+$ docker-compose run --rm app
+```
+
+To open a shell inside the container:
+
+```sh
+$ docker-compose run --rm app bash
+```
